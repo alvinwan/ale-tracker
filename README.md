@@ -5,3 +5,11 @@ available.
 # Install
 
 See offsite [installation instructions](http://alvinwan.com/installing-arcade-learning-environment-with-python3-on-macosx/).
+
+# Usage
+
+Say your rom is at `~/Downloads/space_invaders.bin`. To start logging, run
+
+```
+python main.py ~/Downloads/space_invaders.bin --user --display
+```

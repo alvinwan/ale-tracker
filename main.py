@@ -43,19 +43,21 @@ def main():
         name=os.path.basename(arguments['<rom_file>']).replace('.bin', ''),
         time=time.time())
     with open(logpath, 'w') as f:
-        rewards, writer = [], csv.writer(f)
+        episode_rewards, actions, writer = [], [], csv.writer(f)
+        writer.writerow(['reward', 'action_index'])
         for episode in range(int(arguments['--iters'])):
-            total_reward = 0
+            episode_reward = 0
             while not ale.game_over():
                 if arguments['--user']:
                     action_index = input('Act (0-%d): ' % len(legal_actions))
                     action = legal_actions[int(action_index)]
                 else:
                     action = random_agent(ale, legal_actions)
-                total_reward += ale.act(action)
+                reward = ale.act(action)
+                writer.writerow([reward, action])
+                episode_reward += reward
             print('Episode %d ended with reward %d.' % (episode, total_reward))
-            rewards.append(total_reward)
-            writer.writerow([total_reward])
+            episode_rewards.append(episode_reward)
             ale.reset_game()
 
     print('Average reward:', sum(rewards)/len(rewards))
