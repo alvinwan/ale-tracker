@@ -2,11 +2,12 @@
 Sample script for the Arcade Learning Environment's Python interface
 
 Usage:
-    demo.py <rom_file> [options]
+    main.py <rom_file> [options]
 
 Options:
-    --iters=N    Number of iterations to run [default: 5]
-    --display    Display the game being played. Uses SDL.
+    --iters=N   Number of iterations to run [default: 5]
+    --display   Display the game being played. Uses SDL.
+    --user      Give user control over agent. Control using action_indices.
 
 @author: Alvin Wan
 @site: alvinwan.com
@@ -21,6 +22,10 @@ import sys
 import time
 
 from ale_python_interface import ALEInterface
+
+
+def random_agent(ale, legal_actions):
+    return random.choice(legal_actions)
 
 
 def main():
@@ -42,7 +47,12 @@ def main():
         for episode in range(int(arguments['--iters'])):
             total_reward = 0
             while not ale.game_over():
-                total_reward += ale.act(random.choice(legal_actions))
+                if arguments['--user']:
+                    action_index = input('Act (0-%d): ' % len(legal_actions))
+                    action = legal_actions[int(action_index)]
+                else:
+                    action = random_agent(ale, legal_actions)
+                total_reward += ale.act(action)
             print('Episode %d ended with reward %d.' % (episode, total_reward))
             rewards.append(total_reward)
             writer.writerow([total_reward])
