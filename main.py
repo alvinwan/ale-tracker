@@ -20,6 +20,7 @@ import pygame
 import os
 import sys
 import time
+import numpy as np
 
 from ale_python_interface import ALEInterface
 
@@ -39,28 +40,30 @@ def main():
     ale.loadROM(str.encode(arguments['<rom_file>']))
     legal_actions = ale.getLegalActionSet()
 
+    entries, episode_rewards = None, []
+    for episode in range(int(arguments['--iters'])):
+        episode_reward = 0
+        while not ale.game_over():
+            if arguments['--user']:
+                action_index = input('Act (0-%d): ' % len(legal_actions))
+                action = legal_actions[int(action_index)]
+            else:
+                action = random_agent(ale, legal_actions)
+            reward = ale.act(action)
+            entry = np.array((np.ravel(ale.getScreen()), action, reward))
+            entries = np.vstack((entries, entry)) if entries is not None \
+                      else entry
+            episode_reward += reward
+        print('Episode %d ended with reward %d.' % (episode, episode_reward))
+        episode_rewards.append(episode_reward)
+        ale.reset_game()
+
+    print('Average reward:', sum(episode_rewards)/len(episode_rewards))
     logpath = 'logs/log-{name}-{time}.csv'.format(
         name=os.path.basename(arguments['<rom_file>']).replace('.bin', ''),
         time=time.time())
-    with open(logpath, 'w') as f:
-        episode_rewards, actions, writer = [], [], csv.writer(f)
-        writer.writerow(['reward', 'action_index'])
-        for episode in range(int(arguments['--iters'])):
-            episode_reward = 0
-            while not ale.game_over():
-                if arguments['--user']:
-                    action_index = input('Act (0-%d): ' % len(legal_actions))
-                    action = legal_actions[int(action_index)]
-                else:
-                    action = random_agent(ale, legal_actions)
-                reward = ale.act(action)
-                writer.writerow([reward, action])
-                episode_reward += reward
-            print('Episode %d ended with reward %d.' % (episode, total_reward))
-            episode_rewards.append(episode_reward)
-            ale.reset_game()
-
-    print('Average reward:', sum(rewards)/len(rewards))
+    np.savez_compressed(logpath, entries)
+    print('Data saved to', logpath)
 
 
 if __name__ == '__main__':
