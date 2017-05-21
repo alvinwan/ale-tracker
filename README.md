@@ -1,4 +1,7 @@
 # ALE Tracker
+
+> Consider using [gym-tracker](http://github.com/alvinwan/gym-tracker) instead. This codebase pauses the game when you take actions. However, the `gym-tracker` features continuous gameplay.
+
 Tracks actions for a human player, when manual control mode via ALE is not
 available.
 
